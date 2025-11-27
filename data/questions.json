@@ -1,0 +1,479 @@
+[
+    {
+        "id": 1,
+        "question": "Which of the following is NOT a valid reason for the insurer to cancel a policy?",
+        "options": [
+            "Non-payment of premium",
+            "Fraud",
+            "Misrepresentation of material facts",
+            "Change of address of the insured"
+        ],
+        "correctIndex": 3,
+        "explanation": "Change of address is a routine administrative update and does not constitute grounds for policy cancellation. Insurers can cancel for fraud, non-payment, or misrepresentation.",
+        "chartData": null
+    },
+    {
+        "id": 2,
+        "question": "What is the primary purpose of the 'Free Look Period' in insurance policies?",
+        "options": [
+            "To allow the insurer to investigate the client",
+            "To allow the insured to review terms and return the policy if unsatisfied",
+            "To allow the agent to earn commission",
+            "To delay the start of coverage"
+        ],
+        "correctIndex": 1,
+        "explanation": "The Free Look Period (usually 15 days) gives the policyholder the right to review the policy terms and conditions and return it if they are not satisfied.",
+        "chartData": null
+    },
+    {
+        "id": 3,
+        "question": "Under the Principle of Indemnity, the insured is compensated for:",
+        "options": [
+            "The actual loss suffered",
+            "A fixed amount regardless of loss",
+            "Double the loss amount",
+            "The sentimental value of the item"
+        ],
+        "correctIndex": 0,
+        "explanation": "Indemnity means putting the insured back in the same financial position as before the loss. It compensates for the actual financial loss, not for profit.",
+        "chartData": {
+            "type": "bar",
+            "labels": [
+                "Actual Loss",
+                "Profit"
+            ],
+            "data": [
+                100,
+                0
+            ],
+            "label": "Compensation Limit"
+        }
+    },
+    {
+        "id": 4,
+        "question": "Who is the Insurance Ombudsman appointed to resolve complaints for?",
+        "options": [
+            "Insurance Companies",
+            "Insurance Agents",
+            "Individual Policyholders",
+            "Government Regulators"
+        ],
+        "correctIndex": 2,
+        "explanation": "The Insurance Ombudsman is a grievance redressal mechanism primarily for individual policyholders to resolve complaints against insurers in a cost-effective manner.",
+        "chartData": null
+    },
+    {
+        "id": 5,
+        "question": "What does 'Insurable Interest' mean?",
+        "options": [
+            "The insured must have a financial stake in the subject matter",
+            "The insured must be interested in insurance products",
+            "The agent must be interested in selling",
+            "The insurer must be interested in the risk"
+        ],
+        "correctIndex": 0,
+        "explanation": "Insurable Interest is a legal requirement where the insured must suffer a financial loss if the insured event occurs. Without it, the contract is a wager.",
+        "chartData": null
+    },
+    {
+        "id": 6,
+        "question": "Section 45 of the Insurance Act, 1938 deals with:",
+        "options": [
+            "Licensing of agents",
+            "Indisputability of life insurance policies",
+            "Investments of funds",
+            "Solvency margin"
+        ],
+        "correctIndex": 1,
+        "explanation": "Section 45 states that a life insurance policy cannot be called into question by the insurer on grounds of misstatement after 3 years from the date of issuance.",
+        "chartData": null
+    },
+    {
+        "id": 7,
+        "question": "Which of the following is a pure risk?",
+        "options": [
+            "Investing in stock market",
+            "Gambling",
+            "Risk of fire to a factory",
+            "Launching a new product"
+        ],
+        "correctIndex": 2,
+        "explanation": "Pure risks involve only the possibility of loss or no loss (e.g., fire, theft). Speculative risks (gambling, stocks) involve possibility of profit or loss.",
+        "chartData": null
+    },
+    {
+        "id": 8,
+        "question": "The person who assigns the insurance policy is called:",
+        "options": [
+            "Assignee",
+            "Assignor",
+            "Nominee",
+            "Beneficiary"
+        ],
+        "correctIndex": 1,
+        "explanation": "The policyholder who transfers their rights (assigns the policy) is the Assignor. The person receiving the rights is the Assignee.",
+        "chartData": null
+    },
+    {
+        "id": 9,
+        "question": "What is the maximum sum insured for a standard micro-insurance product?",
+        "options": [
+            "Rs. 50,000",
+            "Rs. 1,00,000",
+            "Rs. 2,00,000",
+            "Rs. 5,00,000"
+        ],
+        "correctIndex": 0,
+        "explanation": "Micro-insurance products typically have a sum insured cap, often around Rs. 50,000, designed for low-income sectors.",
+        "chartData": null
+    },
+    {
+        "id": 10,
+        "question": "Moral hazard refers to:",
+        "options": [
+            "Physical condition of the property",
+            "Dishonesty or character defects of the insured",
+            "Natural calamities",
+            "Market fluctuations"
+        ],
+        "correctIndex": 1,
+        "explanation": "Moral hazard arises from the character or behavior of the insured, such as a tendency to be dishonest or careless, increasing the risk of loss.",
+        "chartData": null
+    },
+    {
+        "id": 11,
+        "question": "In ULIPs, the investment risk is borne by:",
+        "options": [
+            "The Insurer",
+            "The Agent",
+            "The Policyholder",
+            "The IRDAI"
+        ],
+        "correctIndex": 2,
+        "explanation": "In Unit Linked Insurance Plans (ULIPs), the policyholder chooses the funds and bears the investment risk associated with market fluctuations.",
+        "chartData": {
+            "type": "pie",
+            "labels": [
+                "Policyholder",
+                "Insurer"
+            ],
+            "data": [
+                100,
+                0
+            ],
+            "label": "Risk Bearer"
+        }
+    },
+    {
+        "id": 12,
+        "question": "The principle of 'Uberrimae Fides' means:",
+        "options": [
+            "Buyer Beware",
+            "Utmost Good Faith",
+            "Indemnity",
+            "Subrogation"
+        ],
+        "correctIndex": 1,
+        "explanation": "Uberrimae Fides (Utmost Good Faith) requires both parties to disclose all material facts accurately. Non-disclosure can void the contract.",
+        "chartData": null
+    },
+    {
+        "id": 13,
+        "question": "Which document is the evidence of the insurance contract?",
+        "options": [
+            "Proposal Form",
+            "Policy Document",
+            "Premium Receipt",
+            "Cover Note"
+        ],
+        "correctIndex": 1,
+        "explanation": "The Policy Document is the final legal evidence of the contract, detailing all terms, conditions, and exclusions.",
+        "chartData": null
+    },
+    {
+        "id": 14,
+        "question": "Grace period for monthly premium payment mode is usually:",
+        "options": [
+            "15 days",
+            "30 days",
+            "45 days",
+            "60 days"
+        ],
+        "correctIndex": 0,
+        "explanation": "For monthly premiums, the grace period is typically 15 days. For other modes (quarterly, yearly), it is usually 30 days.",
+        "chartData": null
+    },
+    {
+        "id": 15,
+        "question": "Assignment of a policy results in transfer of:",
+        "options": [
+            "Only benefits",
+            "Only liabilities",
+            "Title, rights, and interest",
+            "Nomination rights only"
+        ],
+        "correctIndex": 2,
+        "explanation": "Assignment transfers the complete title, rights, and interest in the policy from the assignor to the assignee.",
+        "chartData": null
+    },
+    {
+        "id": 16,
+        "question": "The concept of 'Human Life Value' (HLV) is used to determine:",
+        "options": [
+            "Premium amount",
+            "Insurance need / Sum Assured",
+            "Maturity value",
+            "Bonus rate"
+        ],
+        "correctIndex": 1,
+        "explanation": "HLV calculates the economic value of a person's life to determine the appropriate amount of life insurance coverage needed.",
+        "chartData": null
+    },
+    {
+        "id": 17,
+        "question": "Reinstatement of a lapsed policy must be done within:",
+        "options": [
+            "1 year",
+            "2 years",
+            "5 years",
+            "Any time"
+        ],
+        "correctIndex": 2,
+        "explanation": "Typically, a lapsed policy can be revived within a specific period, often up to 5 years from the first unpaid premium, subject to underwriting.",
+        "chartData": null
+    },
+    {
+        "id": 18,
+        "question": "Which of the following is a key function of IRDAI?",
+        "options": [
+            "To sell insurance",
+            "To protect policyholders' interests",
+            "To appoint agents",
+            "To manage stock market"
+        ],
+        "correctIndex": 1,
+        "explanation": "The Insurance Regulatory and Development Authority of India (IRDAI) is mandated to protect the interests of policyholders and regulate the industry.",
+        "chartData": null
+    },
+    {
+        "id": 19,
+        "question": "Nomination is defined under which section of the Insurance Act?",
+        "options": [
+            "Section 38",
+            "Section 39",
+            "Section 45",
+            "Section 10"
+        ],
+        "correctIndex": 1,
+        "explanation": "Section 39 of the Insurance Act, 1938 deals with Nomination, while Section 38 deals with Assignment.",
+        "chartData": null
+    },
+    {
+        "id": 20,
+        "question": "A 'Material Fact' is one that:",
+        "options": [
+            "Is known to everyone",
+            "Influences the insurer's decision to accept risk",
+            "Is irrelevant to the policy",
+            "Is related to the agent's commission"
+        ],
+        "correctIndex": 1,
+        "explanation": "A material fact is any information that would influence the judgment of a prudent underwriter in fixing the premium or determining whether to accept the risk.",
+        "chartData": null
+    },
+    {
+        "id": 21,
+        "question": "What is the main purpose of life insurance?",
+        "options": [
+            "To provide financial protection to the nominee",
+            "To invest money for high returns",
+            "To save tax only",
+            "To get a loan"
+        ],
+        "correctIndex": 0,
+        "explanation": "The primary purpose of life insurance is to provide financial protection and security to the nominee/beneficiary in case of the policyholder's untimely death.",
+        "chartData": null
+    },
+    {
+        "id": 22,
+        "question": "Risk transfer through risk pooling is called:",
+        "options": [
+            "Savings",
+            "Insurance",
+            "Investment",
+            "Gambling"
+        ],
+        "correctIndex": 1,
+        "explanation": "Insurance is a mechanism where the risks of a few are pooled together and shared by many, effectively transferring the risk from an individual to the insurer.",
+        "chartData": null
+    },
+    {
+        "id": 23,
+        "question": "What is a 'waiting period' in health insurance?",
+        "options": [
+            "Time to pay premium",
+            "Time before policy starts",
+            "Time duration before certain conditions are covered",
+            "Time to file a claim"
+        ],
+        "correctIndex": 2,
+        "explanation": "The waiting period is a specified time span (e.g., 30 days, 2 years) during which certain diseases or conditions are not covered by the health insurance policy.",
+        "chartData": null
+    },
+    {
+        "id": 24,
+        "question": "In India, which insurance is mandatory for vehicle owners?",
+        "options": [
+            "Comprehensive Cover",
+            "Personal Accident Cover",
+            "Motor Third-Party Liability Insurance",
+            "Zero Depreciation Cover"
+        ],
+        "correctIndex": 2,
+        "explanation": "Under the Motor Vehicles Act, it is mandatory for every vehicle owner to have at least Third-Party Liability Insurance to cover damages to third parties.",
+        "chartData": null
+    },
+    {
+        "id": 25,
+        "question": "A customer having a complaint regarding his insurance policy can approach IRDA through:",
+        "options": [
+            "IGMS (Integrated Grievance Management System)",
+            "Local Police Station",
+            "Civil Court directly",
+            "Social Media"
+        ],
+        "correctIndex": 0,
+        "explanation": "IGMS is the IRDAI's online platform for registering and tracking complaints. Customers can also approach the Ombudsman for grievance redressal.",
+        "chartData": null
+    },
+    {
+        "id": 26,
+        "question": "What is meant by 'diversification' in financial markets?",
+        "options": [
+            "Putting all money in one stock",
+            "Spreading investments across different assets",
+            "Buying only insurance products",
+            "Keeping cash at home"
+        ],
+        "correctIndex": 1,
+        "explanation": "Diversification involves spreading investments across various asset classes (stocks, bonds, insurance) to reduce the overall risk of the portfolio.",
+        "chartData": null
+    },
+    {
+        "id": 27,
+        "question": "How much grace period is allowed for renewal of individual health policies?",
+        "options": [
+            "15 days",
+            "30 days",
+            "45 days",
+            "60 days"
+        ],
+        "correctIndex": 1,
+        "explanation": "As per IRDAI guidelines, a grace period of 30 days is typically allowed for the renewal of individual health insurance policies to maintain continuity benefits.",
+        "chartData": null
+    },
+    {
+        "id": 28,
+        "question": "Which of the following is NOT a tangible good?",
+        "options": [
+            "House",
+            "Mobile Phone",
+            "Insurance",
+            "Car"
+        ],
+        "correctIndex": 2,
+        "explanation": "Insurance is an intangible product (a service/contract) that provides financial protection, unlike physical goods like a house or car.",
+        "chartData": null
+    },
+    {
+        "id": 29,
+        "question": "One of the methods of reducing insurance cost for an insured is:",
+        "options": [
+            "Increasing the Sum Assured",
+            "Opting for a Deductible",
+            "Adding more riders",
+            "Paying monthly premiums"
+        ],
+        "correctIndex": 1,
+        "explanation": "A deductible is the amount the insured agrees to pay out-of-pocket before the insurer pays. Choosing a higher deductible typically lowers the premium.",
+        "chartData": null
+    },
+    {
+        "id": 30,
+        "question": "What is the passing score for the IC 38 exam?",
+        "options": [
+            "50%",
+            "35% (18 marks)",
+            "60%",
+            "40%"
+        ],
+        "correctIndex": 1,
+        "explanation": "Candidates need to score at least 35%, which translates to 18 marks out of 50, to pass the IRDA IC 38 examination.",
+        "chartData": null
+    },
+    {
+        "id": 31,
+        "question": "Is there negative marking in the IC 38 exam?",
+        "options": [
+            "Yes, 0.25 marks per wrong answer",
+            "Yes, 1 mark per wrong answer",
+            "No, there is no negative marking",
+            "Depends on the state"
+        ],
+        "correctIndex": 2,
+        "explanation": "There is no negative marking in the IC 38 exam, so candidates are encouraged to attempt all questions.",
+        "chartData": null
+    },
+    {
+        "id": 32,
+        "question": "What is the duration of the IC 38 exam?",
+        "options": [
+            "30 minutes",
+            "45 minutes",
+            "60 minutes",
+            "90 minutes"
+        ],
+        "correctIndex": 2,
+        "explanation": "The duration of the IC 38 exam is typically 60 minutes (1 hour) for 50 questions.",
+        "chartData": null
+    },
+    {
+        "id": 33,
+        "question": "Which entity appoints the Insurance Ombudsman?",
+        "options": [
+            "The Insurer",
+            "The State Government",
+            "The Council for Insurance Ombudsmen (CIO)",
+            "The High Court"
+        ],
+        "correctIndex": 2,
+        "explanation": "The Council for Insurance Ombudsmen (CIO) manages the Ombudsman scheme, which provides a forum for resolving grievances.",
+        "chartData": null
+    },
+    {
+        "id": 34,
+        "question": "What is the maximum amount an Insurance Ombudsman can award?",
+        "options": [
+            "Rs. 10 Lakhs",
+            "Rs. 20 Lakhs",
+            "Rs. 30 Lakhs",
+            "Rs. 50 Lakhs"
+        ],
+        "correctIndex": 2,
+        "explanation": "The Insurance Ombudsman can award compensation up to Rs. 30 Lakhs (updated from earlier limits) for grievances related to insurance contracts.",
+        "chartData": null
+    },
+    {
+        "id": 35,
+        "question": "Which section of the Insurance Act deals with 'Nomination'?",
+        "options": [
+            "Section 38",
+            "Section 39",
+            "Section 45",
+            "Section 64"
+        ],
+        "correctIndex": 1,
+        "explanation": "Section 39 of the Insurance Act, 1938, governs the nomination facility, allowing the policyholder to appoint a person to receive benefits in case of death.",
+        "chartData": null
+    }
+]
