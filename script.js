@@ -1,7 +1,9 @@
 // State Management
 const state = {
-    questions: [],
+    allQuestions: [], // Store all loaded questions
+    questions: [], // Current set questions
     currentQuestionIndex: 0,
+    currentSetIndex: 0,
     userAnswers: {}, // { questionId: { selectedIndex, isCorrect, timestamp } }
     stats: {
         totalAttempted: 0,
@@ -38,7 +40,8 @@ const elements = {
         accuracy: document.getElementById('stat-accuracy'),
         correct: document.getElementById('stat-correct'),
         resetBtn: document.getElementById('btn-reset'),
-        chartCanvas: document.getElementById('performance-chart')
+        chartCanvas: document.getElementById('performance-chart'),
+        setsGrid: document.getElementById('sets-grid')
     },
     history: {
         list: document.getElementById('history-list')
@@ -56,10 +59,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
     updateDashboard();
     renderHistory();
+    renderSetsGrid();
 
-    // Resume or start
-    if (state.questions.length > 0) {
-        loadQuestion(state.currentQuestionIndex);
+    // Start with Set 1 if available
+    if (state.allQuestions.length > 0) {
+        selectSet(state.currentSetIndex);
     }
 });
 
@@ -67,18 +71,53 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadQuestions() {
     try {
         const response = await fetch('data/questions.json');
-        state.questions = await response.json();
-        elements.quiz.totalNum.textContent = state.questions.length;
+        state.allQuestions = await response.json();
+        console.log(`Loaded ${state.allQuestions.length} questions.`);
     } catch (error) {
         console.error('Failed to load questions:', error);
         elements.quiz.questionText.textContent = "Error loading questions. Please try refreshing.";
     }
 }
 
+// Sets Logic
+function renderSetsGrid() {
+    const totalSets = Math.ceil(state.allQuestions.length / 50);
+    elements.dashboard.setsGrid.innerHTML = '';
+
+    for (let i = 0; i < totalSets; i++) {
+        const btn = document.createElement('div');
+        btn.className = `set-btn ${i === state.currentSetIndex ? 'active' : ''}`;
+        btn.innerHTML = `
+            <i class="fa-solid fa-layer-group"></i>
+            <span>Set ${i + 1}</span>
+            <span class="set-info">${Math.min((i + 1) * 50, state.allQuestions.length) - (i * 50)} Qs</span>
+        `;
+        btn.addEventListener('click', () => selectSet(i));
+        elements.dashboard.setsGrid.appendChild(btn);
+    }
+}
+
+function selectSet(index) {
+    state.currentSetIndex = index;
+    const start = index * 50;
+    const end = start + 50;
+    state.questions = state.allQuestions.slice(start, end);
+    state.currentQuestionIndex = 0;
+
+    // Update UI
+    elements.quiz.totalNum.textContent = state.questions.length;
+    renderSetsGrid(); // Re-render to update active class
+    loadQuestion(0);
+
+    // Switch to quiz view if not already
+    // switchView('quiz'); 
+}
+
 // Persistence
 function loadProgress() {
     const savedProgress = localStorage.getItem('ir38_progress');
     const savedAnswers = localStorage.getItem('ir38_answers');
+    const savedSet = localStorage.getItem('ir38_current_set');
 
     if (savedProgress) {
         state.stats = JSON.parse(savedProgress);
@@ -86,14 +125,17 @@ function loadProgress() {
 
     if (savedAnswers) {
         state.userAnswers = JSON.parse(savedAnswers);
-        // Find first unanswered question
-        // This logic can be improved to actually find the first missing ID
+    }
+
+    if (savedSet) {
+        state.currentSetIndex = parseInt(savedSet, 10);
     }
 }
 
 function saveProgress() {
     localStorage.setItem('ir38_progress', JSON.stringify(state.stats));
     localStorage.setItem('ir38_answers', JSON.stringify(state.userAnswers));
+    localStorage.setItem('ir38_current_set', state.currentSetIndex);
 }
 
 // Navigation
@@ -113,6 +155,7 @@ function switchView(viewName) {
     if (viewName === 'dashboard') {
         updateDashboard();
         renderPerformanceChart();
+        renderSetsGrid();
     } else if (viewName === 'history') {
         renderHistory();
     }
@@ -129,9 +172,13 @@ function setupEventListeners() {
 
 // Quiz Logic
 function loadQuestion(index) {
+    if (state.questions.length === 0) return;
+
     if (index >= state.questions.length) {
-        // Quiz finished loop or show completion
-        index = 0; // Loop for study mode
+        // End of set
+        alert("You have completed this set! Go to Dashboard to select another.");
+        switchView('dashboard');
+        return;
     }
 
     state.currentQuestionIndex = index;
@@ -206,7 +253,7 @@ function handleAnswer(selectedIndex, question) {
 
 function showExplanation(question) {
     elements.quiz.explanationContainer.classList.remove('hidden');
-    elements.quiz.explanationText.textContent = question.explanation;
+    elements.quiz.explanationText.textContent = question.explanation || "No explanation available.";
 
     // Destroy previous chart if exists
     if (explanationChart) {
@@ -289,12 +336,14 @@ function resetProgress() {
     if (confirm('Are you sure you want to reset all progress?')) {
         localStorage.removeItem('ir38_progress');
         localStorage.removeItem('ir38_answers');
+        localStorage.removeItem('ir38_current_set');
         state.stats = { totalAttempted: 0, correctCount: 0, wrongCount: 0 };
         state.userAnswers = {};
         state.currentQuestionIndex = 0;
+        state.currentSetIndex = 0;
         updateDashboard();
         renderPerformanceChart();
-        loadQuestion(0);
+        selectSet(0);
         alert('Progress reset.');
     }
 }
@@ -310,7 +359,7 @@ function renderHistory() {
     }
 
     answers.forEach(([qId, data]) => {
-        const question = state.questions.find(q => q.id == qId);
+        const question = state.allQuestions.find(q => q.id == qId);
         if (!question) return;
 
         const item = document.createElement('div');
