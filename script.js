@@ -324,6 +324,13 @@ function showExplanation(question) {
     } else {
         canvas.style.display = 'none';
     }
+
+    // Update Google Search Link
+    const searchBtn = document.getElementById('btn-google-search');
+    if (searchBtn) {
+        const query = encodeURIComponent(`IRDA IC38 exam ${question.question}`);
+        searchBtn.href = `https://www.google.com/search?q=${query}`;
+    }
 }
 
 function nextQuestion() {
