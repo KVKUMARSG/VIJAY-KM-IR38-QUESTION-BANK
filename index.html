@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
     <div class="app-container">
         <header class="glass-header">
@@ -31,14 +33,15 @@
                 <div class="progress-bar-container">
                     <div class="progress-bar" id="quiz-progress"></div>
                 </div>
-                
+
                 <div class="question-card glass-card">
                     <div class="question-header">
-                        <span class="q-number">Question <span id="q-current">1</span>/<span id="q-total">--</span></span>
+                        <span class="q-number">Question <span id="q-current">1</span>/<span
+                                id="q-total">--</span></span>
                         <span class="q-badge">IRDA Exam</span>
                     </div>
                     <h2 id="question-text">Loading question...</h2>
-                    
+
                     <div class="options-grid" id="options-container">
                         <!-- Options will be injected here -->
                     </div>
@@ -54,7 +57,12 @@
                         <!-- Charts or tables will be injected here -->
                         <canvas id="explanation-chart"></canvas>
                     </div>
-                    <button id="btn-next" class="primary-btn">Next Question <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+
+                <div class="quiz-navigation glass-card">
+                    <button id="btn-prev" class="nav-control-btn"><i class="fa-solid fa-arrow-left"></i>
+                        Previous</button>
+                    <button id="btn-next" class="nav-control-btn">Next <i class="fa-solid fa-arrow-right"></i></button>
                 </div>
             </section>
 
@@ -95,7 +103,7 @@
                         <!-- Set buttons injected here -->
                     </div>
                 </div>
-                
+
                 <div class="reset-zone">
                     <button id="btn-reset" class="danger-btn"><i class="fa-solid fa-trash"></i> Reset Progress</button>
                 </div>
@@ -116,4 +124,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>

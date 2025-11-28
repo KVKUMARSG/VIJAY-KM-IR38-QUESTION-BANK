@@ -8,7 +8,8 @@ const state = {
     stats: {
         totalAttempted: 0,
         correctCount: 0,
-        wrongCount: 0
+        wrongCount: 0,
+        setStats: {} // { setIndex: { attempted, correct, wrong } }
     }
 };
 
@@ -33,7 +34,8 @@ const elements = {
         explanationContainer: document.getElementById('explanation-container'),
         explanationText: document.getElementById('explanation-text'),
         visualAid: document.getElementById('visual-aid-container'),
-        nextBtn: document.getElementById('btn-next')
+        nextBtn: document.getElementById('btn-next'),
+        prevBtn: document.getElementById('btn-prev')
     },
     dashboard: {
         total: document.getElementById('stat-total'),
@@ -85,13 +87,31 @@ function renderSetsGrid() {
     elements.dashboard.setsGrid.innerHTML = '';
 
     for (let i = 0; i < totalSets; i++) {
+        // Calculate stats for this set
+        const setStat = state.stats.setStats[i] || { attempted: 0, correct: 0 };
+        const totalInSet = Math.min((i + 1) * 50, state.allQuestions.length) - (i * 50);
+        const progressPercent = totalInSet > 0 ? (setStat.attempted / totalInSet) * 100 : 0;
+
         const btn = document.createElement('div');
-        btn.className = `set-btn ${i === state.currentSetIndex ? 'active' : ''}`;
+        // Use set-stat-card style instead of simple button
+        btn.className = `set-stat-card ${i === state.currentSetIndex ? 'active' : ''}`;
+        btn.style.cursor = 'pointer';
+        if (i === state.currentSetIndex) btn.style.border = '2px solid var(--primary)';
+
         btn.innerHTML = `
-            <i class="fa-solid fa-layer-group"></i>
-            <span>Set ${i + 1}</span>
-            <span class="set-info">${Math.min((i + 1) * 50, state.allQuestions.length) - (i * 50)} Qs</span>
+            <div class="set-stat-header">
+                <span>Set ${i + 1}</span>
+                <span style="font-size:0.8rem; color:var(--primary);">${setStat.correct}/${setStat.attempted} Correct</span>
+            </div>
+            <div class="set-stat-details">
+                <span>${totalInSet} Questions</span>
+                <span>${Math.round(progressPercent)}% Done</span>
+            </div>
+            <div class="set-progress-mini">
+                <div class="set-progress-fill" style="width: ${progressPercent}%"></div>
+            </div>
         `;
+
         btn.addEventListener('click', () => selectSet(i));
         elements.dashboard.setsGrid.appendChild(btn);
     }
@@ -106,11 +126,8 @@ function selectSet(index) {
 
     // Update UI
     elements.quiz.totalNum.textContent = state.questions.length;
-    renderSetsGrid(); // Re-render to update active class
+    renderSetsGrid();
     loadQuestion(0);
-
-    // Switch to quiz view if not already
-    // switchView('quiz'); 
 }
 
 // Persistence
@@ -121,6 +138,7 @@ function loadProgress() {
 
     if (savedProgress) {
         state.stats = JSON.parse(savedProgress);
+        if (!state.stats.setStats) state.stats.setStats = {}; // Ensure structure
     }
 
     if (savedAnswers) {
@@ -167,6 +185,7 @@ function setupEventListeners() {
     elements.nav.history.addEventListener('click', () => switchView('history'));
 
     elements.quiz.nextBtn.addEventListener('click', nextQuestion);
+    elements.quiz.prevBtn.addEventListener('click', prevQuestion);
     elements.dashboard.resetBtn.addEventListener('click', resetProgress);
 }
 
@@ -174,10 +193,10 @@ function setupEventListeners() {
 function loadQuestion(index) {
     if (state.questions.length === 0) return;
 
+    // Bounds check
+    if (index < 0) index = 0;
     if (index >= state.questions.length) {
-        // End of set
-        alert("You have completed this set! Go to Dashboard to select another.");
-        switchView('dashboard');
+        alert("You have reached the end of this set.");
         return;
     }
 
@@ -188,6 +207,10 @@ function loadQuestion(index) {
     elements.quiz.currentNum.textContent = index + 1;
     elements.quiz.questionText.textContent = question.question;
     elements.quiz.progress.style.width = `${((index + 1) / state.questions.length) * 100}%`;
+
+    // Navigation Buttons State
+    elements.quiz.prevBtn.disabled = index === 0;
+    elements.quiz.nextBtn.disabled = index === state.questions.length - 1;
 
     // Reset state for new question
     elements.quiz.explanationContainer.classList.add('hidden');
@@ -226,10 +249,19 @@ function handleAnswer(selectedIndex, question) {
 
     const isCorrect = selectedIndex === question.correctIndex;
 
-    // Update Stats
+    // Update Global Stats
     state.stats.totalAttempted++;
     if (isCorrect) state.stats.correctCount++;
     else state.stats.wrongCount++;
+
+    // Update Set Stats
+    if (!state.stats.setStats[state.currentSetIndex]) {
+        state.stats.setStats[state.currentSetIndex] = { attempted: 0, correct: 0, wrong: 0 };
+    }
+    const setStat = state.stats.setStats[state.currentSetIndex];
+    setStat.attempted++;
+    if (isCorrect) setStat.correct++;
+    else setStat.wrong++;
 
     // Save Answer
     state.userAnswers[question.id] = {
@@ -295,8 +327,11 @@ function showExplanation(question) {
 }
 
 function nextQuestion() {
-    let nextIndex = state.currentQuestionIndex + 1;
-    loadQuestion(nextIndex);
+    loadQuestion(state.currentQuestionIndex + 1);
+}
+
+function prevQuestion() {
+    loadQuestion(state.currentQuestionIndex - 1);
 }
 
 // Dashboard Logic
@@ -337,7 +372,12 @@ function resetProgress() {
         localStorage.removeItem('ir38_progress');
         localStorage.removeItem('ir38_answers');
         localStorage.removeItem('ir38_current_set');
-        state.stats = { totalAttempted: 0, correctCount: 0, wrongCount: 0 };
+        state.stats = {
+            totalAttempted: 0,
+            correctCount: 0,
+            wrongCount: 0,
+            setStats: {}
+        };
         state.userAnswers = {};
         state.currentQuestionIndex = 0;
         state.currentSetIndex = 0;

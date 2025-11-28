@@ -8,17 +8,22 @@ const OUTPUT_FILE = path.join(__dirname, '../data/questions.json');
 
 // Regex patterns for different file formats
 const PATTERNS = {
-    // Standard: "1. Question ... a) Option ... Ans: a"
+    // Standard: "1. Question ... a) Option ... Ans: a" OR "1. Question ... 1. Option ... Ans: 1"
     standard: {
         question: /^\s*(\d+)[\.\)]\s*(.+)/,
-        option: /^\s*([a-d]|[A-D])[\.\)]\s*(.+)/,
-        answer: /(?:Ans|Answer|Correct Option)\s*[:\-]\s*([a-d]|[A-D])/i
+        option: /^\s*([a-d]|[A-D]|[1-4])[\.\)]\s*(.+)/,
+        answer: /(?:Ans|Answer|Correct Option)\s*[:\-]\s*([a-d]|[A-D]|[1-4])/i
     },
-    // Roman: "Q1: Question ... I. Option ... II. Option" (No explicit answer key in text usually, or at end)
+    // Roman: "Q1: Question ... I. Option ... II. Option"
     roman: {
         question: /^\s*Q?(\d+)[:\.]\s*(.+)/i,
         option: /^\s*([IVX]+)[\.\)]\s*(.+)/,
         answer: /(?:Ans|Answer)\s*[:\-]\s*([IVX]+|[a-d])/i
+    },
+    // Block: ID \n Question \n Opt1 \n Opt2 \n Opt3 \n Opt4 \n Answer (1-4)
+    block: {
+        start: /^\s*(\d+)\s*$/, // Just a number on a line
+        answer: /^\s*([1-4])\s*$/ // Just a number 1-4 on a line
     }
 };
 
@@ -44,16 +49,54 @@ async function extractTextFromDocx(filePath) {
 }
 
 function parseQuestions(text, sourceName) {
-    const lines = text.split('\n');
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l);
     const questions = [];
+
+    // State for standard/roman parsing
     let currentQuestion = null;
     let currentPattern = null;
 
-    for (let i = 0; i < lines.length; i++) {
-        let line = lines[i].trim();
-        if (!line) continue;
+    // State for block parsing
+    let blockBuffer = [];
 
-        // Try to detect start of a new question using all patterns
+    for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+
+        // --- BLOCK PARSING LOGIC (Specific to Life-Question Bank style) ---
+        if (line.match(PATTERNS.block.start)) {
+            if (!currentQuestion && sourceName.includes("Life-Question")) {
+                if (line.match(/^[1-4]$/)) {
+                    // Potential answer found.
+                    if (blockBuffer.length >= 5) {
+                        const ansIndex = parseInt(line) - 1; // 0-3
+                        const opt4 = blockBuffer.pop();
+                        const opt3 = blockBuffer.pop();
+                        const opt2 = blockBuffer.pop();
+                        const opt1 = blockBuffer.pop();
+                        const questionText = blockBuffer.join(' ');
+
+                        const idMatch = questionText.match(/^(\d+)\s+(.+)/);
+                        const finalQ = idMatch ? idMatch[2] : questionText;
+
+                        questions.push({
+                            id: questions.length + 1,
+                            question: finalQ,
+                            options: [opt1, opt2, opt3, opt4],
+                            correctIndex: ansIndex,
+                            explanation: `Source: ${sourceName}`,
+                            chartData: null
+                        });
+                        blockBuffer = [];
+                        continue;
+                    }
+                }
+                blockBuffer.push(line);
+                continue;
+            }
+        }
+        // --- END BLOCK PARSING ---
+
+        // Standard Parsing
         let qMatch = null;
         let detectedPattern = null;
 
@@ -62,7 +105,7 @@ function parseQuestions(text, sourceName) {
             const m = line.match(PATTERNS.standard.question);
             if (m) { qMatch = m; detectedPattern = 'standard'; }
         }
-        // Check Roman (if standard didn't match or we are in roman mode)
+        // Check Roman
         if (!qMatch && (!currentQuestion || currentPattern === 'roman')) {
             const m = line.match(PATTERNS.roman.question);
             if (m) { qMatch = m; detectedPattern = 'roman'; }
@@ -89,7 +132,7 @@ function parseQuestions(text, sourceName) {
 
         if (!currentQuestion) continue;
 
-        // Try to match options based on current pattern
+        // Try to match options
         let optMatch = null;
         if (currentPattern === 'standard') {
             optMatch = line.match(PATTERNS.standard.option);
@@ -107,7 +150,12 @@ function parseQuestions(text, sourceName) {
         if (currentPattern === 'standard') {
             ansMatch = line.match(PATTERNS.standard.answer);
             if (ansMatch) {
-                currentQuestion.correctIndex = ansMatch[1].toLowerCase().charCodeAt(0) - 97;
+                const ansStr = ansMatch[1].toLowerCase();
+                if (ansStr >= '1' && ansStr <= '4') {
+                    currentQuestion.correctIndex = parseInt(ansStr) - 1;
+                } else {
+                    currentQuestion.correctIndex = ansStr.charCodeAt(0) - 97;
+                }
             }
         }
 
@@ -156,21 +204,28 @@ async function processAll() {
     // Validation and Deduplication
     const uniqueQuestions = [];
     const seenQuestions = new Set();
-
-    // Helper to normalize text for comparison
     const normalize = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
-
     console.log(`\nValidating ${allQuestions.length} raw questions...`);
 
     for (const q of allQuestions) {
         // 1. Basic Validation
-        if (!q.question || q.question.length < 10) continue; // Too short
-        if (q.options.length < 4) continue; // Not enough options
-        if (q.correctIndex < 0 || q.correctIndex >= q.options.length) continue; // Invalid answer index
+        if (!q.question || q.question.length < 10) {
+            // console.log(`Skipped (Too Short): ${q.question}`);
+            continue;
+        }
+        if (q.options.length !== 4) {
+            console.log(`Skipped (Options != 4): ID ${q.id} from ${q.explanation} - Has ${q.options.length} options`);
+            continue;
+        }
+        if (q.correctIndex < 0 || q.correctIndex >= q.options.length) {
+            console.log(`Skipped (Invalid Index): ID ${q.id} from ${q.explanation} - Index ${q.correctIndex}`);
+            continue;
+        }
 
         // 2. Deduplication
         const qKey = normalize(q.question);
         if (seenQuestions.has(qKey)) {
+            console.log(`Skipped (Duplicate): ${q.question.substring(0, 30)}...`);
             continue;
         }
 
@@ -184,8 +239,13 @@ async function processAll() {
         uniqueQuestions.push(q);
     }
 
-    // Re-index
-    const finalQuestions = uniqueQuestions.map((q, i) => ({ ...q, id: i + 1 }));
+    // Re-index and add navigation fields
+    const finalQuestions = uniqueQuestions.map((q, i) => ({
+        ...q,
+        id: i + 1,
+        previous: i > 0 ? i : null,
+        next: i < uniqueQuestions.length - 1 ? i + 2 : null
+    }));
 
     console.log(`Total valid unique questions: ${finalQuestions.length}`);
 

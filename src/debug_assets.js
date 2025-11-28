@@ -19,14 +19,11 @@ async function debugFile(filename) {
         text = result.value;
     }
 
-    console.log(text.substring(0, 2000)); // Print first 2000 chars
+    console.log(text.substring(0, 5000)); // Print first 5000 chars
 }
 
 async function runDebug() {
-    await debugFile('ambitious_baba.pdf');
     await debugFile('IRDA_EXAM_01.docx');
-    await debugFile('Life-Question Bank_28032023.pdf');
-    await debugFile('mock_01_on_20Nov2025_V3_with_Answers.pdf');
 }
 
 runDebug();
