@@ -146,319 +146,264 @@ function renderSetsGrid() {
             document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             elements.views.quiz.classList.remove('hidden');
-            elements.nav.quiz.classList.add('active');
-        };
-        elements.dashboard.setsGrid.appendChild(btn);
-    }
-}
 
-function selectSet(index) {
-    state.currentSetIndex = index;
-    const start = index * 50;
-    const end = start + 50;
-    state.questions = state.allQuestions.slice(start, end);
-    state.currentQuestionIndex = 0;
+            // Show selected
+            elements.views[viewName].classList.remove('hidden');
+            elements.views[viewName].classList.add('active');
 
-    console.log(`Selected Set ${index + 1}. Questions: ${state.questions.length}`);
+            // Update Nav
+            Object.values(elements.nav).forEach(el => el.classList.remove('active'));
+            elements.nav[viewName].classList.add('active');
 
-    // Update UI for sets
-    renderSetsGrid(); // Re-render to update active state
+            if (viewName === 'dashboard') {
+                updateDashboard();
+                renderPerformanceChart();
+                renderSetsGrid();
+            } else if (viewName === 'history') {
+                renderHistory();
+            }
+        }
 
-    // Save progress
-    saveProgress();
+        function setupEventListeners() {
+            elements.nav.quiz.addEventListener('click', () => switchView('quiz'));
+            elements.nav.dashboard.addEventListener('click', () => switchView('dashboard'));
+            elements.nav.history.addEventListener('click', () => switchView('history'));
 
-    // Update Quiz View
-    displayQuestion();
-}
+            elements.quiz.nextBtn.addEventListener('click', nextQuestion);
+            elements.quiz.prevBtn.addEventListener('click', prevQuestion);
+            elements.dashboard.resetBtn.addEventListener('click', resetProgress);
+        }
 
-// Persistence
-function loadProgress() {
-    const savedProgress = localStorage.getItem('ir38_progress');
-    const savedAnswers = localStorage.getItem('ir38_answers');
-    const savedSet = localStorage.getItem('ir38_current_set');
+        // Quiz Logic
+        function displayQuestion() {
+            // Alias for loadQuestion(currentQuestionIndex)
+            loadQuestion(state.currentQuestionIndex);
+        }
 
-    if (savedProgress) {
-        state.stats = JSON.parse(savedProgress);
-        if (!state.stats.setStats) state.stats.setStats = {}; // Ensure structure
-    }
+        function loadQuestion(index) {
+            if (state.questions.length === 0) return;
 
-    if (savedAnswers) {
-        state.userAnswers = JSON.parse(savedAnswers);
-    }
+            // Bounds check
+            if (index < 0) index = 0;
+            if (index >= state.questions.length) {
+                alert("You have reached the end of this set.");
+                return;
+            }
 
-    if (savedSet) {
-        state.currentSetIndex = parseInt(savedSet, 10);
-    }
-}
+            state.currentQuestionIndex = index;
+            const question = state.questions[index];
 
-function saveProgress() {
-    localStorage.setItem('ir38_progress', JSON.stringify(state.stats));
-    localStorage.setItem('ir38_answers', JSON.stringify(state.userAnswers));
-    localStorage.setItem('ir38_current_set', state.currentSetIndex);
-}
+            // Update UI
+            elements.quiz.currentNum.textContent = index + 1;
+            elements.quiz.totalNum.textContent = state.questions.length;
+            elements.quiz.questionText.textContent = question.question;
+            elements.quiz.progress.style.width = `${((index + 1) / state.questions.length) * 100}%`;
 
-// Navigation
-function switchView(viewName) {
-    // Hide all views
-    Object.values(elements.views).forEach(el => el.classList.remove('active', 'hidden'));
-    Object.values(elements.views).forEach(el => el.classList.add('hidden'));
+            // Navigation Buttons State
+            elements.quiz.prevBtn.disabled = index === 0;
+            elements.quiz.nextBtn.disabled = index === state.questions.length - 1;
 
-    // Show selected
-    elements.views[viewName].classList.remove('hidden');
-    elements.views[viewName].classList.add('active');
+            // Reset state for new question
+            elements.quiz.explanationContainer.classList.add('hidden');
+            elements.quiz.optionsContainer.innerHTML = '';
 
-    // Update Nav
-    Object.values(elements.nav).forEach(el => el.classList.remove('active'));
-    elements.nav[viewName].classList.add('active');
+            // Check if already answered
+            const previousAnswer = state.userAnswers[question.id];
 
-    if (viewName === 'dashboard') {
-        updateDashboard();
-        renderPerformanceChart();
-        renderSetsGrid();
-    } else if (viewName === 'history') {
-        renderHistory();
-    }
-}
-
-function setupEventListeners() {
-    elements.nav.quiz.addEventListener('click', () => switchView('quiz'));
-    elements.nav.dashboard.addEventListener('click', () => switchView('dashboard'));
-    elements.nav.history.addEventListener('click', () => switchView('history'));
-
-    elements.quiz.nextBtn.addEventListener('click', nextQuestion);
-    elements.quiz.prevBtn.addEventListener('click', prevQuestion);
-    elements.dashboard.resetBtn.addEventListener('click', resetProgress);
-}
-
-// Quiz Logic
-function displayQuestion() {
-    // Alias for loadQuestion(currentQuestionIndex)
-    loadQuestion(state.currentQuestionIndex);
-}
-
-function loadQuestion(index) {
-    if (state.questions.length === 0) return;
-
-    // Bounds check
-    if (index < 0) index = 0;
-    if (index >= state.questions.length) {
-        alert("You have reached the end of this set.");
-        return;
-    }
-
-    state.currentQuestionIndex = index;
-    const question = state.questions[index];
-
-    // Update UI
-    elements.quiz.currentNum.textContent = index + 1;
-    elements.quiz.totalNum.textContent = state.questions.length;
-    elements.quiz.questionText.textContent = question.question;
-    elements.quiz.progress.style.width = `${((index + 1) / state.questions.length) * 100}%`;
-
-    // Navigation Buttons State
-    elements.quiz.prevBtn.disabled = index === 0;
-    elements.quiz.nextBtn.disabled = index === state.questions.length - 1;
-
-    // Reset state for new question
-    elements.quiz.explanationContainer.classList.add('hidden');
-    elements.quiz.optionsContainer.innerHTML = '';
-
-    // Check if already answered
-    const previousAnswer = state.userAnswers[question.id];
-
-    question.options.forEach((opt, i) => {
-        const btn = document.createElement('div');
-        btn.className = 'option-btn';
-        btn.innerHTML = `
+            question.options.forEach((opt, i) => {
+                const btn = document.createElement('div');
+                btn.className = 'option-btn';
+                btn.innerHTML = `
             <div class="option-marker">${String.fromCharCode(65 + i)}</div>
             <span>${opt}</span>
         `;
 
-        if (previousAnswer) {
-            if (i === question.correctIndex) btn.classList.add('correct');
-            if (i === previousAnswer.selectedIndex && i !== question.correctIndex) btn.classList.add('wrong');
-            btn.classList.add('disabled');
-        } else {
-            btn.addEventListener('click', () => handleAnswer(i, question));
+                if (previousAnswer) {
+                    if (i === question.correctIndex) btn.classList.add('correct');
+                    if (i === previousAnswer.selectedIndex && i !== question.correctIndex) btn.classList.add('wrong');
+                    btn.classList.add('disabled');
+                } else {
+                    btn.addEventListener('click', () => handleAnswer(i, question));
+                }
+
+                elements.quiz.optionsContainer.appendChild(btn);
+            });
+
+            if (previousAnswer) {
+                showExplanation(question);
+            }
         }
 
-        elements.quiz.optionsContainer.appendChild(btn);
-    });
+        function handleAnswer(selectedIndex, question) {
+            // Prevent multiple answers
+            if (state.userAnswers[question.id]) return;
 
-    if (previousAnswer) {
-        showExplanation(question);
+            const isCorrect = selectedIndex === question.correctIndex;
+
+            // Update Global Stats
+            state.stats.totalAttempted++;
+            if (isCorrect) state.stats.correctCount++;
+            else state.stats.wrongCount++;
+
+            // Update Set Stats
+            if (!state.stats.setStats[state.currentSetIndex]) {
+                state.stats.setStats[state.currentSetIndex] = { attempted: 0, correct: 0, wrong: 0 };
+            }
+            const setStat = state.stats.setStats[state.currentSetIndex];
+            setStat.attempted++;
+            if (isCorrect) setStat.correct++;
+            else setStat.wrong++;
+
+            // Save Answer
+            state.userAnswers[question.id] = {
+                selectedIndex,
+                isCorrect,
+                timestamp: new Date().toISOString()
+            };
+
+            saveProgress();
+
+            // Update UI
+            const buttons = elements.quiz.optionsContainer.children;
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].classList.add('disabled');
+                if (i === question.correctIndex) buttons[i].classList.add('correct');
+                if (i === selectedIndex && !isCorrect) buttons[i].classList.add('wrong');
+            }
+
+            showExplanation(question);
+        }
+
+        function showExplanation(question) {
+            elements.quiz.explanationContainer.classList.remove('hidden');
+            elements.quiz.explanationText.textContent = question.explanation || "No explanation available.";
+
+            // Destroy previous chart if exists
+            if (explanationChart) {
+                explanationChart.destroy();
+                explanationChart = null;
+            }
+
+            const canvas = document.getElementById('explanation-chart');
+
+            if (question.chartData) {
+                canvas.style.display = 'block';
+                const ctx = canvas.getContext('2d');
+                explanationChart = new Chart(ctx, {
+                    type: question.chartData.type || 'bar',
+                    data: {
+                        labels: question.chartData.labels,
+                        datasets: [{
+                            label: question.chartData.label,
+                            data: question.chartData.data,
+                            backgroundColor: ['rgba(99, 102, 241, 0.5)', 'rgba(236, 72, 153, 0.5)'],
+                            borderColor: ['#6366f1', '#ec4899'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { labels: { color: '#fff' } }
+                        },
+                        scales: {
+                            y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                            x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                        }
+                    }
+                });
+            } else {
+                canvas.style.display = 'none';
+            }
+
+            // Update Google Search Link
+            const searchBtn = document.getElementById('btn-google-search');
+            if (searchBtn) {
+                const query = encodeURIComponent(`IRDA IC38 exam ${question.question}`);
+                searchBtn.href = `https://www.google.com/search?q=${query}`;
+            }
+        }
+
+        function nextQuestion() {
+            loadQuestion(state.currentQuestionIndex + 1);
+        }
+
+        function prevQuestion() {
+            loadQuestion(state.currentQuestionIndex - 1);
+        }
+
+        // Dashboard Logic
+        function updateDashboard() {
+            const { totalAttempted, correctCount } = state.stats;
+            const accuracy = totalAttempted > 0 ? Math.round((correctCount / totalAttempted) * 100) : 0;
+
+            elements.dashboard.total.textContent = totalAttempted;
+            elements.dashboard.accuracy.textContent = `${accuracy}%`;
+            elements.dashboard.correct.textContent = correctCount;
+        }
     }
-}
 
-function handleAnswer(selectedIndex, question) {
-    // Prevent multiple answers
-    if (state.userAnswers[question.id]) return;
+    function renderPerformanceChart() {
+        if (performanceChart) performanceChart.destroy();
 
-    const isCorrect = selectedIndex === question.correctIndex;
-
-    // Update Global Stats
-    state.stats.totalAttempted++;
-    if (isCorrect) state.stats.correctCount++;
-    else state.stats.wrongCount++;
-
-    // Update Set Stats
-    if (!state.stats.setStats[state.currentSetIndex]) {
-        state.stats.setStats[state.currentSetIndex] = { attempted: 0, correct: 0, wrong: 0 };
-    }
-    const setStat = state.stats.setStats[state.currentSetIndex];
-    setStat.attempted++;
-    if (isCorrect) setStat.correct++;
-    else setStat.wrong++;
-
-    // Save Answer
-    state.userAnswers[question.id] = {
-        selectedIndex,
-        isCorrect,
-        timestamp: new Date().toISOString()
-    };
-
-    saveProgress();
-
-    // Update UI
-    const buttons = elements.quiz.optionsContainer.children;
-    for (let i = 0; i < buttons.length; i++) {
-        buttons[i].classList.add('disabled');
-        if (i === question.correctIndex) buttons[i].classList.add('correct');
-        if (i === selectedIndex && !isCorrect) buttons[i].classList.add('wrong');
-    }
-
-    showExplanation(question);
-}
-
-function showExplanation(question) {
-    elements.quiz.explanationContainer.classList.remove('hidden');
-    elements.quiz.explanationText.textContent = question.explanation || "No explanation available.";
-
-    // Destroy previous chart if exists
-    if (explanationChart) {
-        explanationChart.destroy();
-        explanationChart = null;
-    }
-
-    const canvas = document.getElementById('explanation-chart');
-
-    if (question.chartData) {
-        canvas.style.display = 'block';
-        const ctx = canvas.getContext('2d');
-        explanationChart = new Chart(ctx, {
-            type: question.chartData.type || 'bar',
+        const ctx = elements.dashboard.chartCanvas.getContext('2d');
+        performanceChart = new Chart(ctx, {
+            type: 'doughnut',
             data: {
-                labels: question.chartData.labels,
+                labels: ['Correct', 'Wrong'],
                 datasets: [{
-                    label: question.chartData.label,
-                    data: question.chartData.data,
-                    backgroundColor: ['rgba(99, 102, 241, 0.5)', 'rgba(236, 72, 153, 0.5)'],
-                    borderColor: ['#6366f1', '#ec4899'],
-                    borderWidth: 1
+                    data: [state.stats.correctCount, state.stats.wrongCount],
+                    backgroundColor: ['#22c55e', '#ef4444'],
+                    borderWidth: 0
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { labels: { color: '#fff' } }
-                },
-                scales: {
-                    y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                    x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    legend: { position: 'bottom', labels: { color: '#fff' } }
                 }
             }
         });
-    } else {
-        canvas.style.display = 'none';
     }
 
-    // Update Google Search Link
-    const searchBtn = document.getElementById('btn-google-search');
-    if (searchBtn) {
-        const query = encodeURIComponent(`IRDA IC38 exam ${question.question}`);
-        searchBtn.href = `https://www.google.com/search?q=${query}`;
-    }
-}
-
-function nextQuestion() {
-    loadQuestion(state.currentQuestionIndex + 1);
-}
-
-function prevQuestion() {
-    loadQuestion(state.currentQuestionIndex - 1);
-}
-
-// Dashboard Logic
-function updateDashboard() {
-    const { totalAttempted, correctCount } = state.stats;
-    const accuracy = totalAttempted > 0 ? Math.round((correctCount / totalAttempted) * 100) : 0;
-
-    elements.dashboard.total.textContent = totalAttempted;
-    elements.dashboard.accuracy.textContent = `${accuracy}%`;
-    elements.dashboard.correct.textContent = correctCount;
-}
-
-function renderPerformanceChart() {
-    if (performanceChart) performanceChart.destroy();
-
-    const ctx = elements.dashboard.chartCanvas.getContext('2d');
-    performanceChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Correct', 'Wrong'],
-            datasets: [{
-                data: [state.stats.correctCount, state.stats.wrongCount],
-                backgroundColor: ['#22c55e', '#ef4444'],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { position: 'bottom', labels: { color: '#fff' } }
-            }
+    function resetProgress() {
+        if (confirm('Are you sure you want to reset all progress?')) {
+            localStorage.removeItem('ir38_progress');
+            localStorage.removeItem('ir38_answers');
+            localStorage.removeItem('ir38_current_set');
+            state.stats = {
+                totalAttempted: 0,
+                correctCount: 0,
+                wrongCount: 0,
+                setStats: {}
+            };
+            state.userAnswers = {};
+            state.currentQuestionIndex = 0;
+            state.currentSetIndex = 0;
+            updateDashboard();
+            renderPerformanceChart();
+            selectSet(0);
+            alert('Progress reset.');
         }
-    });
-}
-
-function resetProgress() {
-    if (confirm('Are you sure you want to reset all progress?')) {
-        localStorage.removeItem('ir38_progress');
-        localStorage.removeItem('ir38_answers');
-        localStorage.removeItem('ir38_current_set');
-        state.stats = {
-            totalAttempted: 0,
-            correctCount: 0,
-            wrongCount: 0,
-            setStats: {}
-        };
-        state.userAnswers = {};
-        state.currentQuestionIndex = 0;
-        state.currentSetIndex = 0;
-        updateDashboard();
-        renderPerformanceChart();
-        selectSet(0);
-        alert('Progress reset.');
-    }
-}
-
-// History Logic
-function renderHistory() {
-    elements.history.list.innerHTML = '';
-    const answers = Object.entries(state.userAnswers).sort((a, b) => new Date(b[1].timestamp) - new Date(a[1].timestamp));
-
-    if (answers.length === 0) {
-        elements.history.list.innerHTML = '<div class="empty-state" style="text-align:center; padding:2rem; color:#94a3b8;">No history yet.</div>';
-        return;
     }
 
-    answers.forEach(([qId, data]) => {
-        const question = state.allQuestions.find(q => q.id == qId);
-        if (!question) return;
+    // History Logic
+    function renderHistory() {
+        elements.history.list.innerHTML = '';
+        const answers = Object.entries(state.userAnswers).sort((a, b) => new Date(b[1].timestamp) - new Date(a[1].timestamp));
 
-        const item = document.createElement('div');
-        item.className = 'history-item';
-        item.innerHTML = `
+        if (answers.length === 0) {
+            elements.history.list.innerHTML = '<div class="empty-state" style="text-align:center; padding:2rem; color:#94a3b8;">No history yet.</div>';
+            return;
+        }
+
+        answers.forEach(([qId, data]) => {
+            const question = state.allQuestions.find(q => q.id == qId);
+            if (!question) return;
+
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.innerHTML = `
             <div>
                 <div style="font-weight:600; margin-bottom:4px;">Q${qId}: ${question.question.substring(0, 50)}...</div>
                 <div style="font-size:0.85rem; color:#94a3b8;">${new Date(data.timestamp).toLocaleDateString()}</div>
@@ -467,6 +412,6 @@ function renderHistory() {
                 ${data.isCorrect ? 'Correct' : 'Wrong'}
             </div>
         `;
-        elements.history.list.appendChild(item);
-    });
-}
+            elements.history.list.appendChild(item);
+        });
+    }
