@@ -35,37 +35,40 @@ function processExcel() {
                 normalizedRow[key.toLowerCase().trim()] = row[key];
             });
 
-            // Extract fields
-            const question = normalizedRow['question'] || normalizedRow['q'];
-            const optA = normalizedRow['option a'] || normalizedRow['a'] || normalizedRow['opt a'];
-            const optB = normalizedRow['option b'] || normalizedRow['b'] || normalizedRow['opt b'];
-            const optC = normalizedRow['option c'] || normalizedRow['c'] || normalizedRow['opt c'];
-            const optD = normalizedRow['option d'] || normalizedRow['d'] || normalizedRow['opt d'];
-            let answer = normalizedRow['answer'] || normalizedRow['correct answer'] || normalizedRow['ans'];
-            const explanation = normalizedRow['explanation'] || normalizedRow['rationale'] || normalizedRow['details'] || '';
+            // Extract fields based on user's headers
+            const question = normalizedRow['question body'];
+            const optA = normalizedRow['alternative 1'];
+            const optB = normalizedRow['alternative 2'];
+            const optC = normalizedRow['alternative 3'];
+            const optD = normalizedRow['alternative 4'];
+            let answerRaw = normalizedRow['correct alternative']; // Expecting 1, 2, 3, 4 or I, II, III, IV
+            const category = normalizedRow['syllabus category name'] || 'General';
+            const additionalInfo = normalizedRow['additional information'] || '';
 
-            if (!question || !optA || !optB || !optC || !optD || !answer) {
-                console.log(`  -> Skipping Row ${index + 2}: Missing required fields.`);
+            if (!question || !optA || !optB || !optC || !optD) {
+                // console.log(`  -> Skipping Row ${index + 2}: Missing required fields.`);
                 return;
             }
 
             // Normalize Answer
             let correctIndex = -1;
-            answer = String(answer).trim().toUpperCase();
+            // Handle "Alternative 1", "1", 1, "A", "I", etc.
+            const ansStr = String(answerRaw).trim().toUpperCase();
 
-            if (answer === 'A' || answer === '1') correctIndex = 0;
-            else if (answer === 'B' || answer === '2') correctIndex = 1;
-            else if (answer === 'C' || answer === '3') correctIndex = 2;
-            else if (answer === 'D' || answer === '4') correctIndex = 3;
-            else {
-                // Try matching text
-                const options = [optA, optB, optC, optD];
-                correctIndex = options.findIndex(o => String(o).trim().toLowerCase() === String(answer).trim().toLowerCase());
-            }
+            if (ansStr.includes('1') || ansStr === 'A' || ansStr === 'I') correctIndex = 0;
+            else if (ansStr.includes('2') || ansStr === 'B' || ansStr === 'II') correctIndex = 1;
+            else if (ansStr.includes('3') || ansStr === 'C' || ansStr === 'III') correctIndex = 2;
+            else if (ansStr.includes('4') || ansStr === 'D' || ansStr === 'IV') correctIndex = 3;
 
             if (correctIndex === -1) {
-                console.log(`  -> Skipping Row ${index + 2}: Invalid answer format "${answer}".`);
+                console.log(`  -> Skipping Row ${index + 2}: Invalid answer format "${answerRaw}".`);
                 return;
+            }
+
+            // Construct Explanation
+            let explanationText = additionalInfo;
+            if (category) {
+                explanationText = `<strong>Category:</strong> ${category}<br><br>${explanationText}`;
             }
 
             allQuestions.push({
@@ -73,7 +76,8 @@ function processExcel() {
                 question: String(question).trim(),
                 options: [String(optA).trim(), String(optB).trim(), String(optC).trim(), String(optD).trim()],
                 correctIndex: correctIndex,
-                explanation: explanation ? String(explanation).trim() : `Correct Answer: ${String.fromCharCode(65 + correctIndex)}`,
+                explanation: explanationText,
+                category: category,
                 previous: allQuestions.length > 0 ? allQuestions.length : null,
                 next: null // Will update later
             });
